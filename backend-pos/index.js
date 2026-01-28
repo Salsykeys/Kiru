@@ -1,5 +1,6 @@
 //import
 const express = require('express')
+const path = require('path')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 
@@ -17,6 +18,10 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
+app.get('/uploads/:filename', (req, res) => {
+    res.sendFile(path.join(__dirname, 'uploads', req.params.filename));
+})
+
 app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
+    console.log(`Server Running at http://localhost:${port}`);
 })
