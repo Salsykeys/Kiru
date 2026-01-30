@@ -22,7 +22,8 @@ const routes = [
 
   // category
   { method: 'get', path: '/category', middlewares: [verifyToken], handler: categoryController.findCategories },
-  { method: 'post', path: '/category', middlewares: [verifyToken, upload.single('image'), validateCategory, handleValidationErrors], handler: categoryController.createCategory }
+  { method: 'post', path: '/category', middlewares: [verifyToken, upload.single('image'), validateCategory, handleValidationErrors], handler: categoryController.createCategory },
+  { method: 'get', path: '/category/:id', middlewares: [verifyToken], handler: categoryController.findCategoryById },
 
 ];
 

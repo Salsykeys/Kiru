@@ -1,6 +1,8 @@
 const express = require('express');
 const prisma = require('../prisma/client');
 const fs = require('fs');
+const { search } = require('../routes');
+const { measureMemory } = require('vm');
 
 const findCategories = async (req, res) => {
     try{
@@ -67,7 +69,7 @@ const findCategories = async (req, res) => {
 
 const createCategory = async (req, res) => {
     try {
-        const categories = await prisma.category.create({
+        const category = await prisma.category.create({
             data: {
                 name: req.body.name,
                 description: req.body.description,
@@ -80,7 +82,7 @@ const createCategory = async (req, res) => {
                 success: true,
                 message: 'Category berhasil dibuat', 
             },
-            data: categories,
+            data: category,
         });
     } catch (error) {
         res.status(500).send({
@@ -93,4 +95,49 @@ const createCategory = async (req, res) => {
     }
 };
 
-module.exports = { findCategories, createCategory };
+const findCategoryById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const category = await prisma.category.findUnique({
+            where: {
+                id: Number(id),
+            },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                description: true,
+                created_at: true,
+                updated_at: true,
+            },
+        });
+
+        if(!category) {
+            return res.status(404).send({
+                meta: {
+                    success: false,
+                    message: `Kategori dengan id ${id} tidak ditemukan`,
+                },
+            });
+        }
+
+        res.status(200).send({
+            meta: {
+                success: true,
+                message: `Berhasil mengambil kategori dengan id ${id}`,
+            },
+            data: category,
+        });
+    } catch (error) {
+        return res.status(500).send({
+            meta: {
+                success: false,
+                message: 'Terjadi kesalahan di server',
+            },
+            errors: error,
+        });
+    }
+};
+
+module.exports = { findCategories, createCategory, findCategoryById };
