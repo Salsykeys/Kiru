@@ -26,6 +26,8 @@ const routes = [
   { method: 'get', path: '/category/:id', middlewares: [verifyToken], handler: categoryController.findCategoryById },
   { method: 'put', path: '/category/:id', middlewares: [verifyToken, upload.single('image'), validateCategory, handleValidationErrors], handler: categoryController.updateCategory },
   { method: 'delete', path: '/category/:id',middlewares: [verifyToken], handler: categoryController.deleteCategory },
+  { method: 'get', path: '/category', middlewares: [verifyToken], handler: categoryController.allCategories }
+
 ];
 
 const createRoutes = (routes) => {

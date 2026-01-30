@@ -238,4 +238,38 @@ const deleteCategory = async (req, res) => {
     }
 };
 
-module.exports = { findCategories, createCategory, findCategoryById, updateCategory, deleteCategory };
+const allCategories = async (req, res) => {
+    try {
+        const categories = await prisma.category.findMany({
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                description: true,
+                created_at: true,
+                updated_at: true,
+            },
+            orderBy: {
+                id: 'desc'
+            },
+        });
+
+        res.status(200).send({
+            meta: {
+                success: true,
+                message: 'Berhasil mendapat semua kategori',
+            },
+            data: categories,
+        });
+    } catch (error) {
+        return req.status(500).send({
+            meta: {
+                success: false,
+                message: 'Terjadi kesalahan di server',
+            },
+            errors: error
+        });
+    }
+};
+
+module.exports = { findCategories, createCategory, findCategoryById, updateCategory, deleteCategory, allCategories };
