@@ -5,7 +5,7 @@ const { search } = require('../routes');
 const { measureMemory } = require('vm');
 
 const findCategories = async (req, res) => {
-    try{
+    try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
         const skip = (page - 1) * limit;
@@ -80,7 +80,7 @@ const createCategory = async (req, res) => {
         res.status(201).send({
             meta: {
                 success: true,
-                message: 'Category berhasil dibuat', 
+                message: 'Category berhasil dibuat',
             },
             data: category,
         });
@@ -113,7 +113,7 @@ const findCategoryById = async (req, res) => {
             },
         });
 
-        if(!category) {
+        if (!category) {
             return res.status(404).send({
                 meta: {
                     success: false,
@@ -140,4 +140,102 @@ const findCategoryById = async (req, res) => {
     }
 };
 
-module.exports = { findCategories, createCategory, findCategoryById };
+const updateCategory = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const dataCategory = {
+            name: req.body.name,
+            description: req.body.description,
+            updated_at: new Date(),
+        }
+
+        if (req.file) {
+            dataCategory.image = req.file.path;
+            const category = await prisma.category.findUnique({
+                where: {
+                    id: Number(id),
+                },
+            });
+
+            if (category.image) {
+                fs.unlinkSync(category.image);
+            };
+        };
+
+        const category = await prisma.category.update({
+            where: {
+                id: Number(id),
+            },
+            data: dataCategory,
+        });
+
+        res.status(200).send({
+            meta: {
+                success: false,
+                message: 'Kategori berhasil diperbarui'
+            },
+            data: category,
+        });
+
+    } catch (error) {
+        res.status(500).send({
+            meta: {
+                success: false,
+                message: 'Terjadi kesalahan di server',
+            },
+        });
+    }
+};
+
+const deleteCategory = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const category = await prisma.category.findUnique({
+            where: {
+                id: Number(id),
+            },
+        });
+
+        if (!category) {
+            return res.status(404).send({
+                meta: {
+                    success: false,
+                    message: `Tidak bisa menemukan category dengan id ${id}`
+                },
+            });
+        }
+
+        await prisma.category.delete({
+            where: {
+                id: Number(id),
+            },
+        });
+
+        if (category.image) {
+            const imagePath = category.image;
+            const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
+            const filePath = `uploads/${fileName}`;
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            };
+        };
+
+        return res.status(200).send({
+            meta: {
+                success: true,
+                message: 'Kategori berhasil dihapus',
+            },
+        });
+    } catch (error) {
+        res.status(500).send({
+            meta: {
+                success: false,
+                message: 'Terjadi kesalahan di server',
+            },
+        });
+    }
+};
+
+module.exports = { findCategories, createCategory, findCategoryById, updateCategory, deleteCategory };
