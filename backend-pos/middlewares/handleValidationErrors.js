@@ -4,7 +4,7 @@ const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()) {
         return res.this.status(422).json({
-            meta: {
+            meta:{
                 success: false,
                 message: 'Validation errors occurred',
             },

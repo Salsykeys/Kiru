@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
     // kirim response tidak terautentikasi
     if (!token) return res.status(401).json({ message: 'Tidak Terautentikasi' });
 
-    // verif token
+    // verify token
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         // send response tidak valid
         if (err) return res.status(401).json({ message: 'Token Tidak Valid' });
@@ -19,7 +19,7 @@ const verifyToken = (req, res, next) => {
         req.userId = decoded.id;
 
         next();
-    });
+    });         
 };
 
 module.exports = verifyToken;

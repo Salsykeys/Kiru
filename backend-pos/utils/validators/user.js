@@ -1,7 +1,7 @@
 const { body } = require('express-validator');
 const prisma = require('../../prisma/client');
 
-// Define validasi for create dan update user
+// Define
 const validateUser = [
     body('name').notEmpty().withMessage('Name is required'),
     body('email')
@@ -11,8 +11,7 @@ const validateUser = [
             if (!value) {
                 throw new Error('Email is Required')
             }
-
-            // For update operations, kecualikan current user ID dari email uniquness check
+            // update
             const user = await prisma.user.findFirst({
                 where: {
                     email: value,
@@ -28,7 +27,7 @@ const validateUser = [
             return true;
         }),
 
-    // Conditional validasi untuk password
+    // pw condtional valid
     body('password').if((value, { req }) => req.method === 'POST')
         .notEmpty().withMessage('Password is Required')
         .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),

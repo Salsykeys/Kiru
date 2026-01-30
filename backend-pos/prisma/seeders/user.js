@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 async function main() {
 
-    // Hash password
+    // Hashing password
     const password = await bcrypt.hash('password', 10);
 
     // Create user
