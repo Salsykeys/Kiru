@@ -69,7 +69,7 @@ const findProduct = async (req, res) => {
                 success: false,
                 message: 'Internal server error',
             },
-            errors: error,
+        errors: error,
         });
     }
 };
