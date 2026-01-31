@@ -1,8 +1,6 @@
 const express = require('express');
 const prisma = require('../prisma/client');
 const fs = require('fs');
-const { search } = require('../routes');
-const { measureMemory } = require('vm');
 
 const findCategories = async (req, res) => {
     try {
@@ -60,7 +58,7 @@ const findCategories = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server'
+                message: 'Internal server Error'
             },
             errors: error,
         });
@@ -88,7 +86,7 @@ const createCategory = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal server Error',
             },
             errors: error,
         });
@@ -133,7 +131,7 @@ const findCategoryById = async (req, res) => {
         return res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal server Error',
             },
             errors: error,
         });
@@ -172,7 +170,7 @@ const updateCategory = async (req, res) => {
 
         res.status(200).send({
             meta: {
-                success: false,
+                success: true,
                 message: 'Kategori berhasil diperbarui'
             },
             data: category,
@@ -182,8 +180,9 @@ const updateCategory = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal server Error',
             },
+            errors: error,
         });
     }
 };
@@ -232,7 +231,7 @@ const deleteCategory = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal server Error',
             },
         });
     }
@@ -265,7 +264,7 @@ const allCategories = async (req, res) => {
         return req.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal server Error',
             },
             errors: error
         });

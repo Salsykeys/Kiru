@@ -12,7 +12,7 @@ const findUser = async (req, res) => {
         const search = req.query.search || '';
 
         const users = await prisma.user.findMany({
-            where: {    
+            where: {
                 name: {
                     contains: search,
                 }
@@ -56,7 +56,7 @@ const findUser = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server'
+                message: 'Internal Server Error'
             },
             errors: error,
         });
@@ -76,7 +76,7 @@ const createUser = async (req, res) => {
             },
         });
 
-        res.status(200).send({
+        res.status(201).send({
             meta: {
                 success: true,
                 message: 'Pengguna berhasil dibuat',
@@ -87,7 +87,7 @@ const createUser = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal Server Error',
             },
             errors: error,
         });
@@ -124,7 +124,7 @@ const findUserById = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal Server Error',
             },
             errors: error,
         });
@@ -170,7 +170,7 @@ const updateUser = async (req, res) => {
         res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server',
+                message: 'Internal Server Error',
             },
             errors: error,
         });
@@ -206,7 +206,7 @@ const deleteUser = async (req, res) => {
         return res.status(500).send({
             meta: {
                 success: false,
-                message: 'Terjadi kesalahan di server'
+                message: 'Internal Server Error'
             },
             errors: error,
         });
