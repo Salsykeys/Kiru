@@ -1,11 +1,16 @@
 // Imports
 const express = require('express');
-const { validateLogin, validateUser, validateCategory, validateProduct } = require('../utils/validators');
+
+// Middlewares
+const { validateLogin, validateUser, validateCategory, validateProduct, validateCustomer } = require('../utils/validators');
 const { handleValidationErrors, verifyToken, upload } = require('../middlewares');
+
+// Controllers
 const loginController = require('../controllers/LoginController');
 const userController = require('../controllers/UserController');
 const categoryController = require('../controllers/CategoryController');
 const productController = require('../controllers/ProductController');
+const customerController = require('../controllers/CustomerController');
 
 const router = express.Router();
 
@@ -38,6 +43,13 @@ const routes = [
   { method: 'get', path: '/products-by-category/:id', middlewares: [verifyToken], handler: productController.findProductByCategoryId },
   { method: 'post', path: '/products-by-barcode', middlewares: [verifyToken], handler: productController.findProductByBarcode },
 
+  // customer
+  { method: 'get', path: '/customers', middlewares: [verifyToken], handler: customerController.findCustomer },
+  { method: 'post', path: '/customers', middlewares: [verifyToken, validateCustomer, handleValidationErrors], handler: customerController.createCustomer },
+  { method: 'get', path: '/customers/:id', middlewares: [verifyToken], handler: customerController.findCustomerById },
+  { method: 'put', path: '/customers/:id', middlewares: [verifyToken, validateCustomer, handleValidationErrors], handler: customerController.updateCustomer },
+  { method: 'delete', path: '/customers/:id', middlewares: [verifyToken], handler: customerController.deleteCustomer },
+  { method: 'get', path: '/customers-all', middlewares: [verifyToken], handler: customerController.allCustomers },
 ];
 
 const createRoutes = (routes) => {
