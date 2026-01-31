@@ -1,6 +1,6 @@
 const express = require("express");
 const prisma = require("../prisma/client");
-const { generateRandomInvoice } = require ('../utils/generateRandomInvoice');
+const { generateRandomInvoice } = require('../utils/generateRandomInvoice');
 
 const createTransaction = async (req, res) => {
     try {
@@ -13,7 +13,7 @@ const createTransaction = async (req, res) => {
         const discount = parseInt(req.body.discount);
         const grandTotal = parseInt(req.body.grand_total);
 
-        if(isNaN(customerid) || isNaN(cash) || isNaN(change) || isNaN(discount) || isNaN(grandTotal)) {
+        if (isNaN(customerid) || isNaN(cash) || isNaN(change) || isNaN(discount) || isNaN(grandTotal)) {
             return res.status(400).send({
                 meta: {
                     success: false,
@@ -39,8 +39,8 @@ const createTransaction = async (req, res) => {
             include: { product: true },
         });
 
-        for(const cart of carts) {
-            
+        for (const cart of carts) {
+
             const price = parseFloat(cart.price);
 
             await prisma.transactionDetail.create({
@@ -64,8 +64,8 @@ const createTransaction = async (req, res) => {
             });
 
             await prisma.product.update({
-                where: { id: cart.product_id},
-                data: { stock: {decrement: cart.qty }},
+                where: { id: cart.product_id },
+                data: { stock: { decrement: cart.qty } },
             });
         }
 
@@ -89,6 +89,80 @@ const createTransaction = async (req, res) => {
             errors: error.message,
         });
     }
+};
+
+const findTransactionByInvoice = async (req, res) => {
+    const { invoice } = req.query;
+
+    try {
+        const transaction = await prisma.transaction.findFirst({
+            where: {
+                invoice: invoice,
+            },
+            select: {
+                id: true,
+                cashier_id: true,
+                customer_id: true,
+                invoice: true,
+                cash: true,
+                change: true,
+                discount: true,
+                grand_total: true,
+                created_at: true,
+                customer: {
+                    select: {
+                        name: true,
+                    },
+                },
+                cashier: {
+                    select: {
+                        name: true,
+                        created_at: true,
+                        updated_at: true,
+                    },
+                },
+                transaction_details: {
+                    select: {
+                        id: true,
+                        product_id: true,
+                        qty: true,
+                        price: true,
+                        product: {
+                            select: {
+                                title: true,
+                            },
+                        },
+                    },
+                },
+            }
+        });
+
+        if (!transaction) {
+            return res.status(404).send({
+                meta: {
+                    success: false,
+                    message: `Transaksi dengan invoice: ${invoice} tidak ditemukan`,
+                },
+            });
+        }
+
+        res.status(200).send({
+            meta: {
+                success: true,
+                message: `Berhasil mendapatkan transaksi dengan invoice: ${invoice}`
+            },
+            data: transaction,
+        });
+
+    } catch (error) {
+        res.status(500).send({
+            meta: {
+                success: false,
+                message: 'Internal server error',
+            },
+            errors: error,
+        });
+    }
 }
 
-module.exports= { createTransaction };
+module.exports = { createTransaction, findTransactionByInvoice };
