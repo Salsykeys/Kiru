@@ -2,7 +2,7 @@
 const express = require('express');
 
 // Middlewares
-const { validateLogin, validateUser, validateCategory, validateProduct, validateCustomer, validateCart, validateTransaction } = require('../utils/validators');
+const { validateLogin, validateUser, validateCategory, validateProduct, validateCustomer, validateCart, validateTransaction, validateSales } = require('../utils/validators');
 const { handleValidationErrors, verifyToken, upload } = require('../middlewares');
 
 // Controllers
@@ -13,6 +13,7 @@ const productController = require('../controllers/ProductController');
 const customerController = require('../controllers/CustomerController');
 const cartController = require('../controllers/CartController');
 const transactionController = require('../controllers/TransactionController');
+const salesController = require('../controllers/SalesController');
 
 const router = express.Router();
 
@@ -61,6 +62,11 @@ const routes = [
   // transaction
   { method: 'post', path: '/transactions', middlewares: [verifyToken, validateTransaction, handleValidationErrors], handler: transactionController.createTransaction },
   { method: 'get', path: '/transactions', middlewares: [verifyToken], handler: transactionController.findTransactionByInvoice },
+
+  // sales
+  { method: 'get', path: '/sales', middlewares: [verifyToken, validateSales, handleValidationErrors], handler: salesController.filterSales },
+  { method: 'get', path: '/sales/export', middlewares: [verifyToken, validateSales, handleValidationErrors], handler: salesController.exportSales },
+
 ];
 
 const createRoutes = (routes) => {
