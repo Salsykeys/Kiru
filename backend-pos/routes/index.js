@@ -2,7 +2,7 @@
 const express = require('express');
 
 // Middlewares
-const { validateLogin, validateUser, validateCategory, validateProduct, validateCustomer, validateCart, validateTransaction, validateSales } = require('../utils/validators');
+const { validateLogin, validateUser, validateCategory, validateProduct, validateCustomer, validateCart, validateTransaction, validateSales, validateProfit } = require('../utils/validators');
 const { handleValidationErrors, verifyToken, upload } = require('../middlewares');
 
 // Controllers
@@ -14,6 +14,8 @@ const customerController = require('../controllers/CustomerController');
 const cartController = require('../controllers/CartController');
 const transactionController = require('../controllers/TransactionController');
 const salesController = require('../controllers/SalesController');
+const profitController = require('../controllers/ProfitController');
+const dashboardController = require('../controllers/DashboardController');
 
 const router = express.Router();
 
@@ -67,6 +69,12 @@ const routes = [
   { method: 'get', path: '/sales', middlewares: [verifyToken, validateSales, handleValidationErrors], handler: salesController.filterSales },
   { method: 'get', path: '/sales/export', middlewares: [verifyToken, validateSales, handleValidationErrors], handler: salesController.exportSales },
 
+  // profits
+  { method: 'get', path: '/profits', middlewares: [verifyToken, validateProfit, handleValidationErrors], handler: profitController.filterProfit },
+  { method: 'get', path: '/profits/export', middlewares: [verifyToken, validateProfit, handleValidationErrors], handler: profitController.exportProfit },
+
+  // Dashboard
+  { method: 'get', path: '/dashboard', middlewares: [verifyToken], handler: dashboardController.getDashboardData }
 ];
 
 const createRoutes = (routes) => {
