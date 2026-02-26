@@ -1,0 +1,93 @@
+html {
+    font-family: "Verdana";
+}
+
+.content {
+    width: 80mm;
+    font-size: 12px;
+    padding: 5px; /* Pangkas biar ga kepanjangan */
+}
+
+.content .title {
+    text-align: center;
+    font-weight: bold;
+}
+
+.content .head-desc {
+    margin-top: 10px;
+    display: table;
+    width: 100%;
+}
+
+.content .head-desc>div {
+    display: table-cell;
+}
+
+.content .head-desc .user {
+    text-align: right;
+}
+
+.content .nota {
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 16px; /* Gedein biar keliatan */
+    font-weight: 900; /* Paling tebel */
+}
+
+.content .separate {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border-top: 1px dashed #000;
+}
+
+.content .transaction-table {
+    width: 100%;
+    font-size: 11px;
+}
+
+.content .transaction-table .sell-price {
+    width: 65px;
+    text-align: right;
+}
+
+.content .transaction-table .final-price {
+    text-align: right;
+}
+
+.content .transaction-table tr td {
+    vertical-align: top;
+}
+
+.content .transaction-table .price-tr td {
+    padding-top: 3px; /* Rapiin jarak */
+    padding-bottom: 3px;
+}
+
+.content .transaction-table .discount-tr td {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.content .transaction-table .separate-line {
+    height: 1px;
+    border-top: 1px dashed #000;
+}
+
+.content .thanks {
+    margin-top: 15px; /* Kurangin biar ga hampa */
+    text-align: center;
+}
+
+.content .azost {
+    margin-top: 5px;
+    text-align: center;
+    font-size: 10px;
+}
+
+@media print {
+    @page {
+        width: 80mm;
+        margin: 0mm;
+    }
+}

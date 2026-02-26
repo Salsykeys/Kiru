@@ -5,63 +5,61 @@ const { format, subDays } = require('date-fns');
 const getDashboardData = async (req, res) => {
     try {
         const today = new Date();
-        const week = subDays(today, 7);
+        const week = subDays(today, 6); // Last 7 days including today
 
-        const chartSalesWeek = await prisma.transaction.groupBy({
-            by: ['created_at'],
-            _sum: {
-                grand_total: true,
-            },
+        // Fetch all transactions in the last week
+        const transactionsWeek = await prisma.transaction.findMany({
             where: {
                 created_at: {
-                    gte: week,
+                    gte: new Date(week.setHours(0, 0, 0, 0)),
                 },
             },
         });
+    
+        const salesByDate = {};
+        const profitsByDate = {};
 
-        let sales_date = [];
-        let sales_total = [];
+        // Initialize last 7 days with 0
+        for (let i = 0; i < 7; i++) {
+            const dateStr = format(subDays(today, i), 'yyyy-MM-dd');
+            salesByDate[dateStr] = 0;
+            profitsByDate[dateStr] = 0;
+        }
+
         let sumSalesWeek = 0;
+        transactionsWeek.forEach(transaction => {
+            const dateStr = format(new Date(transaction.created_at), 'yyyy-MM-dd');
+            if (salesByDate[dateStr] !== undefined) {
+                salesByDate[dateStr] += transaction.grand_total;
+            }
+            sumSalesWeek += transaction.grand_total;
+        });
 
-        if (chartSalesWeek.length > 0) {
-            chartSalesWeek.forEach(result => {
-                sales_date.push(format(new Date(result.created_at), 'yyyy-MM-dd'));
-                const total = parseInt(result._sum.grand_total || 0);
-                sales_total.push(total);
-                sumSalesWeek += total;
-            });
-        } else {
-            sales_date.push('');
-            sales_total.push(0);
-        }
-
-        const chartProfitsWeek = await prisma.profit.groupBy({
-            by: ['created_at'],
-            _sum: {
-                total: true,
-            },
+        // Fetch all profits in the last week
+        const profitsWeek = await prisma.profit.findMany({
             where: {
                 created_at: {
-                    gte: week,
+                    gte: new Date(week.setHours(0, 0, 0, 0)),
                 },
             },
         });
 
-        let profits_date = [];
-        let profits_total = [];
         let sumProfitsWeek = 0;
+        profitsWeek.forEach(profit => {
+            const dateStr = format(new Date(profit.created_at), 'yyyy-MM-dd');
+            if (profitsByDate[dateStr] !== undefined) {
+                profitsByDate[dateStr] += profit.total;
+            }
+            sumProfitsWeek += profit.total;
+        });
 
-        if (chartProfitsWeek.length > 0) {
-            chartProfitsWeek.forEach(result => {
-                profits_date.push(format(new Date(result.created_at), 'yyyy-MM-dd'));
-                const total = parseInt(result._sum.total || 0);
-                profits_total.push(total);
-                sumProfitsWeek += total;
-            });
-        } else {
-            profits_date.push('');
-            profits_total.push(0);
-        }
+        // Convert to arrays and sort by date
+        const sortedDates = Object.keys(salesByDate).sort();
+        const sales_date = sortedDates;
+        const sales_total = sortedDates.map(date => parseInt(salesByDate[date]));
+
+        const profits_date = sortedDates;
+        const profits_total = sortedDates.map(date => parseInt(profitsByDate[date]));
 
         const countSalesToday = await prisma.transaction.count({
             where: {

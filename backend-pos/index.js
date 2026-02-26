@@ -5,7 +5,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const router = require('./routes');
 
-//init app
+//init appo
 const app = express()
 app.use(cors());
 

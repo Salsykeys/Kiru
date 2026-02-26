@@ -211,7 +211,7 @@ const deleteCategory = async (req, res) => {
                 id: Number(id),
             },
         });
-
+        
         if (category.image) {
             const imagePath = category.image;
             const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
