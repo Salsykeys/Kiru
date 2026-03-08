@@ -20,11 +20,16 @@
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "backend-pos/uploads/$1"
+      "dest": "backend-pos/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend-pos/$1"
+      "dest": "frontend-pos/$1",
+      "check": true
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend-pos/index.html"
     }
   ]
 }
