@@ -29,6 +29,7 @@ const Barcode = ({
 
     useEffect (() => {
         const settings = {
+            value,
             format,
             width,
             height,

@@ -8,37 +8,66 @@ const findProduct = async (req, res) => {
         const limit = parseInt(req.query.limit) || 5;
         const skip = (page - 1) * limit;
         const search = req.query.search || '';
+        const isRandom = req.query.random === 'true';
 
-        const products = await prisma.product.findMany({
-            where: {
-                title: {
-                    contains: search,
-                },
-            },
+        let products;
+        if (isRandom && !search) {
+            // If random and no search, get random product IDs first
+            // Using MySQL RAND() for randomization
+            const randomIds = await prisma.$queryRaw`SELECT id FROM products ORDER BY RAND() LIMIT ${limit}`;
+            const ids = randomIds.map(r => r.id);
 
-            select: {
-                id: true,
-                barcode: true,
-                title: true,
-                image: true,
-                description: true,
-                buy_price: true,
-                sell_price: true,
-                stock: true,
-                created_at: true,
-                updated_at: true,
-                category: {
-                    select: {
-                        name: true,
+            products = await prisma.product.findMany({
+                where: { id: { in: ids } },
+                select: {
+                    id: true,
+                    barcode: true,
+                    title: true,
+                    image: true,
+                    description: true,
+                    buy_price: true,
+                    sell_price: true,
+                    stock: true,
+                    created_at: true,
+                    updated_at: true,
+                    category: {
+                        select: { name: true }
                     }
                 }
-            },
-            orderBy: {
-                id: 'desc',
-            },
-            skip: skip,
-            take: limit
-        });
+            });
+            // Sort them back to the random order we got from DB
+            products.sort(() => Math.random() - 0.5);
+        } else {
+            products = await prisma.product.findMany({
+                where: {
+                    title: {
+                        contains: search,
+                    },
+                },
+                select: {
+                    id: true,
+                    barcode: true,
+                    title: true,
+                    image: true,
+                    description: true,
+                    buy_price: true,
+                    sell_price: true,
+                    stock: true,
+                    created_at: true,
+                    updated_at: true,
+                    category: {
+                        select: {
+                            name: true,
+                        }
+                    }
+                },
+                orderBy: {
+                    id: 'desc',
+                },
+                skip: skip,
+                take: limit
+            });
+        }
 
         const totalProduct = await prisma.product.count({
             where: {
@@ -69,7 +98,7 @@ const findProduct = async (req, res) => {
                 success: false,
                 message: 'Internal server error',
             },
-        errors: error,
+            errors: error,
         });
     }
 };
@@ -280,8 +309,8 @@ const findProductByCategoryId = async (req, res) => {
 
     try {
 
-        const page = (req.query.page) || 1;
-        const limit = (req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
         const skip = (page - 1) * limit;
 
         const products = await prisma.product.findMany({
@@ -339,11 +368,22 @@ const findProductByCategoryId = async (req, res) => {
 };
 
 const findProductByBarcode = async (req, res) => {
+    const { barcode } = req.body;
+
+    if (!barcode) {
+        return res.status(200).send({
+            meta: {
+                success: true,
+                message: 'Silahkan scan barcode',
+            },
+            data: [],
+        });
+    }
 
     try {
         const product = await prisma.product.findMany({
             where: {
-                barcode: req.body.barcode,
+                barcode: barcode,
             },
             select: {
                 id: true,

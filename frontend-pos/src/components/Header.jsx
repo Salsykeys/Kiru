@@ -39,9 +39,9 @@ export default function Header() {
                         <span className="navbar-toggler-icon"></span>
                     </button>
                     <h1 className="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3 mt-1">
-                        <Link to={"/"}>
-                            <img src="/images/logo.png" width="100" height="32" alt="Tabler" className="navbar-brand-image mb-2" />
-                            <label className='ms-2'>GeraiAja</label>
+                        <Link to={"/dashboard"}>
+                            <img src="/images/logo-kirudoang.png" width="100" height="32" alt="Kiru" className="navbar-brand-image mb-2" />
+                            <label className='ms-2'>Kiru</label>
                         </Link>
                     </h1>
                     <div className="navbar-nav flex-row order-md-last">

@@ -1,3 +1,7 @@
 node_modules
 # Keep environment variables out of version control
 .env
+server.log
+test_500.js
+test_api_500.js
+test_reg.js

@@ -1,3 +1,4 @@
+
 //import
 const express = require('express')
 const path = require('path')
@@ -19,9 +20,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-app.get('/uploads/:filename', (req, res) => {
-    res.sendFile(path.join(__dirname, 'uploads', req.params.filename));
-});
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api', router);
 

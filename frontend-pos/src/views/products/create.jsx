@@ -16,12 +16,9 @@ export default function ProductCreate({ fetchData }) {
     const [ stock, setStock ] = useState("");
     const [ categoryId, setCategoryId ] = useState("");
     const [ errors, setErrors ] = useState ({});
-
     const [ categories, setCategories ] = useState ([]);
-    
     const fileInputRef = useRef(null);
     const modelRef = useRef(null);
-
     const token = Cookies.get("token");
 
     const fetchCategories = async () => {

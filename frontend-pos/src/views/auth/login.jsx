@@ -5,7 +5,7 @@ import LayoutAuth from '../../layouts/auth'
 import { useState } from 'react';
 
 //import hook useNavigate from react router dom
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 //import store
 import { useStore } from '../../stores/user';
@@ -35,7 +35,7 @@ export default function Login() {
 
         //call action "login" from store
         await login({ email, password })
-            .then((response) => {
+            .then(() => {
 
                 //redirect to dashboard
                 return navigate('/dashboard');
@@ -56,15 +56,15 @@ export default function Login() {
     return (
         <LayoutAuth>
             <div className="text-center mb-4 mt-5">
-                <a href="/" className="navbar-brand navbar-brand-autodark p-4 bg-blue-lt rounded-circle shadow-sm">
+                <Link to="/" className="navbar-brand navbar-brand-autodark p-4 bg-blue-lt rounded-circle shadow-sm">
                     <img src="/images/logo.png" height="60" alt="" />
-                </a>
+                </Link>
                 <br />
-                <h2 className='mt-3'>CASHIER APPS</h2>
+                <h2 className='mt-3'>LOGIN KASIR</h2>
             </div>
             <div className="card card-md rounded">
                 <div className="card-body">
-                    <h2 className="h2 text-center mb-4">Login to your account</h2>
+                    <h2 className="h2 text-center mb-4">Masuk ke Dashboard</h2>
                     {
                         loginFailed && (
                             <div className="alert alert-danger mt-2">
@@ -107,6 +107,10 @@ export default function Login() {
                             <button type="submit" className="btn btn-primary w-100 rounded">Sign in</button>
                         </div>
                     </form>
+                    <hr className="my-3" />
+                    <div className="text-center">
+                        <Link to="/login" className="text-secondary small">Masuk sebagai Customer</Link>
+                    </div>
                 </div>
             </div>
         </LayoutAuth>

@@ -5,10 +5,13 @@ const jwt = require('jsonwebtoken');
 // Verif token
 const verifyToken = (req, res, next) => {
     // ambil token dari header 'authorization'
-    const token = req.headers['authorization'];
+    const authHeader = req.headers['authorization'];
 
     // kirim response tidak terautentikasi
-    if (!token) return res.status(401).json({ message: 'Tidak Terautentikasi' });
+    if (!authHeader) return res.status(401).json({ message: 'Tidak Terautentikasi' });
+
+    // strip prefix "Bearer " jika ada
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
 
     // verify token
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
@@ -19,7 +22,7 @@ const verifyToken = (req, res, next) => {
         req.userId = decoded.id;
 
         next();
-    });         
+    });
 };
 
 module.exports = verifyToken;

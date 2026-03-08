@@ -12,6 +12,6 @@ const handleValidationErrors = (req, res, next) => {
         });
     }
     next();
-}; 7.
+};
 
 module.exports = handleValidationErrors;

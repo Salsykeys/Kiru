@@ -213,4 +213,49 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { findUser, createUser, findUserById, updateUser, deleteUser };
+const getUserTransactions = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const uId = Number(id);
+        if (isNaN(uId)) {
+            return res.status(400).send({
+                meta: { success: false, message: 'ID Pengguna tidak valid' },
+            });
+        }
+
+        const transactions = await prisma.transaction.findMany({
+            where: {
+                cashier_id: uId,
+            },
+            include: {
+                transaction_details: {
+                    include: {
+                        product: true
+                    }
+                },
+            },
+            orderBy: {
+                id: 'desc',
+            },
+        });
+
+        res.status(200).send({
+            meta: {
+                success: true,
+                message: 'Berhasil mendapatkan riwayat transaksi',
+            },
+            data: transactions,
+        });
+    } catch (error) {
+        res.status(500).send({
+            meta: {
+                success: false,
+                message: 'Internal Server Error'
+            },
+            errors: error,
+        });
+    }
+}
+
+module.exports = { findUser, createUser, findUserById, updateUser, deleteUser, getUserTransactions };

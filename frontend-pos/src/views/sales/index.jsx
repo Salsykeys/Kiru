@@ -112,7 +112,7 @@ export default function Sales() {
                                                             <tr key={index}>
                                                                 <td>{sale.created_at}</td>
                                                                 <td>{sale.invoice}</td>
-                                                                <td>{sale.cashier.name}</td>
+                                                                <td>{sale.cashier?.name}</td>
                                                                 <td>{sale.customer?.name ?? 'Umum'}</td>
                                                                 <td className='text-end'>{moneyFormat(sale.grand_total)}</td>
                                                             </tr>
