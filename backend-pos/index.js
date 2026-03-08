@@ -24,6 +24,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api', router);
 
-app.listen(port, () => {
-    console.log(`Server Running at http://localhost:${port}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`Server Running at http://localhost:${port}`);
+    });
+}
+
+// Export the Express API untuk Vercel Serverless
+module.exports = app;
