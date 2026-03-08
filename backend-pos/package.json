@@ -15,7 +15,6 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.0",
     "cloudinary": "^2.9.0",
-    "cloudinary-multer": "^1.0.2",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "date-fns": "^3.6.0",
@@ -25,7 +24,8 @@
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
     "midtrans-client": "^1.4.3",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0"
   },
   "devDependencies": {
     "prisma": "^5.13.0"
