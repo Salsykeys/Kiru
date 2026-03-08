@@ -16,7 +16,7 @@ export default function OrderItemList({ carts, fetchCarts }) {
             Api.delete(`/api/carts/${cartID}`)
                 .then(response => {
 
-                    
+
                     toast.success(`${response.data.meta.message}`, {
                         duration: 4000,
                         position: "top-right",
@@ -27,7 +27,7 @@ export default function OrderItemList({ carts, fetchCarts }) {
                         },
                     });
 
-                    
+
                     fetchCarts();
                 });
         }
@@ -41,7 +41,7 @@ export default function OrderItemList({ carts, fetchCarts }) {
                         <div className="card rounded">
                             <div className="card-body d-flex align-items-center">
                                 <img
-                                    src={`${import.meta.env.VITE_APP_BASEURL}/${cart.product.image}`}
+                                    src={cart.product.image?.startsWith('http') ? cart.product.image : `${import.meta.env.VITE_APP_BASEURL}/${cart.product.image}`}
                                     alt={cart.product.title}
                                     width={50}
                                     height={50}
@@ -50,7 +50,7 @@ export default function OrderItemList({ carts, fetchCarts }) {
                                 <div className="flex-fill">
                                     <h4 className="mb-0">{cart.product.title}</h4>
                                     <p className="text-success mb-0 mt-1">{moneyFormat(cart.price)}</p>
-                                    <hr className="mb-1 mt-1"/>
+                                    <hr className="mb-1 mt-1" />
                                     <p className="text-muted mb-0">Qty: {cart.qty}</p>
                                 </div>
                                 <button className="btn btn-danger ms-3 rounded p-2 pt-1 pb-1" onClick={() => deleteCart(cart.id)}>

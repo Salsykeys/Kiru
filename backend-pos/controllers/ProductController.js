@@ -222,7 +222,7 @@ const updateProduct = async (req, res) => {
             });
 
             if (product.image) {
-                fs.unlinkSync(product.image);
+                // fs.unlinkSync(product.image); // Disabled for Cloudinary
             }
         }
 
@@ -278,12 +278,7 @@ const deleteProduct = async (req, res) => {
         });
 
         if (product.image) {
-            const imagePath = product.image;
-            const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-            const filePath = `uploads/${fileName}`;
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            };
+            // fs.unlinkSync not applicable for Cloudinary URLs
         }
 
         res.status(200).send({

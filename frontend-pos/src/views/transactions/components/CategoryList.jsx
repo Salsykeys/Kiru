@@ -36,7 +36,7 @@ export default function CategoryList({ categories, fetchProducts, fetchProductBy
                                         <div className="card card-link card-link-pop rounded">
                                             <div className="card-body d-flex align-items-center justify-content-center p-2">
                                                 <img
-                                                    src={`${import.meta.env.VITE_APP_BASEURL}/${category.image}`}
+                                                    src={category.image?.startsWith('http') ? category.image : `${import.meta.env.VITE_APP_BASEURL}/${category.image}`}
                                                     alt={category.name}
                                                     width={50}
                                                     height={50}

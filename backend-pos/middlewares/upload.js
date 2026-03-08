@@ -1,19 +1,28 @@
 // Imports
 const multer = require('multer');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const path = require('path');
 const crypto = require('crypto');
 
 const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/') // => 'uploads'
-    },
+// Setup Cloudinary config
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-    filename: (req, file, cb) => {
-        const filehash = crypto.randomBytes(16).toString('hex');
-        const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `${filehash}${ext}`);
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'kiru-pos',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+        public_id: (req, file) => {
+            const filehash = crypto.randomBytes(16).toString('hex');
+            return filehash;
+        }
     },
 });
 

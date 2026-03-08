@@ -272,7 +272,7 @@ export default function Dashboard() {
                                                 <div className="card rounded">
                                                     <div className="card-body d-flex align-items-center">
                                                         <img
-                                                            src={`${import.meta.env.VITE_APP_BASEURL}/${product.image}`}
+                                                            src={product.image?.startsWith('http') ? product.image : `${import.meta.env.VITE_APP_BASEURL}/${product.image}`}
                                                             alt={product.title}
                                                             width={50}
                                                             height={50}

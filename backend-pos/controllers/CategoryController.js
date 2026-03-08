@@ -157,7 +157,7 @@ const updateCategory = async (req, res) => {
             });
 
             if (category.image) {
-                fs.unlinkSync(category.image);
+                // fs.unlinkSync(category.image); // Disabled for Cloudinary
             };
         };
 
@@ -211,14 +211,9 @@ const deleteCategory = async (req, res) => {
                 id: Number(id),
             },
         });
-        
+
         if (category.image) {
-            const imagePath = category.image;
-            const fileName = imagePath.substring(imagePath.lastIndexOf('/') + 1);
-            const filePath = `uploads/${fileName}`;
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            };
+            // fs.unlinkSync not applicable for Cloudinary URLs
         };
 
         return res.status(200).send({
