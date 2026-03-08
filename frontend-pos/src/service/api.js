@@ -4,9 +4,14 @@ import axios from 'axios';
 //import js cookie
 import Cookies from 'js-cookie';
 
+let baseURL = import.meta.env.VITE_APP_BASEURL || '';
+if (baseURL === '/api') {
+    baseURL = ''; // Mencegah double /api/api/ di Vercel
+}
+
 const Api = axios.create({
     //set default endpoint API
-    baseURL: import.meta.env.VITE_APP_BASEURL
+    baseURL: baseURL
 })
 
 // Handle request - attach tokens
