@@ -5,37 +5,48 @@ import Cookies from 'js-cookie';
 import moneyFormat from '../../utils/moneyFormat';
 import ApexCharts from "apexcharts";
 import generateRandomColors from '../../utils/generateRandomColors';
+import { getImageUrl } from '../../utils/getImageUrl';
 
+const commonChartOptions = {
+    fontFamily: 'inherit',
+    animations: {
+        enabled: true,
+        easing: 'linear',
+        dynamicAnimation: {
+            speed: 450
+        }
+    },
+    dataLabels: { enabled: false },
+    grid: { show: false },
+    tooltip: { theme: 'dark' },
+    xaxis: {
+        labels: { show: false },
+        tooltip: { enabled: false },
+        axisBorder: { show: false },
+        type: 'category',
+    },
+    yaxis: { labels: { show: false } },
+    colors: ['#206bc4'],
+    legend: { show: false },
+    markers: { size: 0 },
+};
 
 export default function Dashboard() {
 
-    //state sales
-    const [countSalestoday, setCountSalestoday] = useState(0);
-    const [sumSalestoday, setSumSalestoday] = useState(0);
-    const [sumSalesWeek, setSumSalesWeek] = useState(0);
-    const [salesDate, setSalesDate] = useState([]);
-    const [salesTotal, setSalesTotal] = useState([]);
-
-    //state profits
-    const [sumProfitsToday, setSumProfitsToday] = useState(0);
-    const [sumProfitsWeek, setSumProfitsWeek] = useState(0);
-    const [profitsDate, setProfitsDate] = useState([]);
-    const [profitsTotal, setProfitsTotal] = useState([]);
-
-    //state bestselling
-    const [productsBestSelling, setProductsBestSelling] = useState([]);
-
-    //stoklimit
-    const [productsLimitStock, setproductsLimitStock] = useState([]);
-
-    // Image URL Helper
-    const getImageUrl = (path) => {
-        if (!path) return "https://placehold.co/400x400?text=No+Image";
-        if (path.startsWith('http')) return path;
-        const cleanPath = path.toString().replace(/^uploads[\\/]/, '');
-        if (cleanPath.startsWith('http')) return cleanPath;
-        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
-    };
+    //state dashboard data
+    const [dashboardData, setDashboardData] = useState({
+        countSalestoday: 0,
+        sumSalestoday: 0,
+        sumSalesWeek: 0,
+        salesDate: [],
+        salesTotal: [],
+        sumProfitsToday: 0,
+        sumProfitsWeek: 0,
+        profitsDate: [],
+        profitsTotal: [],
+        productsBestSelling: [],
+        productsLimitStock: []
+    });
 
     const fetchData = async () => {
         const token = Cookies.get("token");
@@ -45,32 +56,25 @@ export default function Dashboard() {
 
             try {
                 const response = await Api.get("/api/dashboard");
+                const resData = response.data.data;
 
-                //sales
-                setCountSalestoday(response.data.data.count_sales_today);
-                setSumSalestoday(response.data.data.sum_sales_today);
-                setSumSalesWeek(response.data.data.sum_sales_week);
-                setSalesDate(response.data.data.sales.sales_date);
-                setSalesTotal(response.data.data.sales.sales_total);
-
-                //profits
-                setSumProfitsToday(response.data.data.sum_profits_today);
-                setSumProfitsWeek(response.data.data.sum_profits_week);
-                setProfitsDate(response.data.data.profits.profits_date);
-                setProfitsTotal(response.data.data.profits.profits_total);
-
-                //bestselling
-                setProductsBestSelling(response.data.data.best_selling_products);
-
-                //stoklimit
-                setproductsLimitStock(response.data.data.products_limit_stock);
-
+                setDashboardData({
+                    countSalestoday: resData.count_sales_today || 0,
+                    sumSalestoday: resData.sum_sales_today || 0,
+                    sumSalesWeek: resData.sum_sales_week || 0,
+                    salesDate: resData.sales?.sales_date || [],
+                    salesTotal: resData.sales?.sales_total || [],
+                    sumProfitsToday: resData.sum_profits_today || 0,
+                    sumProfitsWeek: resData.sum_profits_week || 0,
+                    profitsDate: resData.profits?.profits_date || [],
+                    profitsTotal: resData.profits?.profits_total || [],
+                    productsBestSelling: resData.best_selling_products || [],
+                    productsLimitStock: resData.products_limit_stock || [],
+                });
 
             } catch (error) {
                 console.error("There was an error fetching the data!", error);
             }
-        } else {
-            console.error("Token is not available!");
         }
     };
 
@@ -79,38 +83,15 @@ export default function Dashboard() {
     }, []);
 
     const initializeChart = (elementId, charOptions) => {
-        const chart = new ApexCharts(document.getElementById(elementId), charOptions);
+        const element = document.getElementById(elementId);
+        if (!element) return null;
+        const chart = new ApexCharts(element, charOptions);
         chart.render();
-
         return chart;
     };
 
-    const commonChartOptions = {
-        fontFamily: 'inherit',
-        animations: {
-            enabled: true,
-            easing: 'linear',
-            dynamicAnimation: {
-                speed: 450
-            }
-        },
-        dataLabels: { enabled: false },
-        grid: { show: false },
-        tooltip: { theme: 'dark' },
-        xaxis: {
-            labels: { show: false },
-            tooltip: { enabled: false },
-            axisBorder: { show: false },
-            type: 'category',
-        },
-        yaxis: { labels: { show: false } },
-        colors: ['#206bc4'],
-        legend: { show: false },
-        markers: { size: 0 },
-    };
-
     useEffect(() => {
-        if (salesDate.length === 0) return;
+        if (dashboardData.salesDate.length === 0) return;
 
         // Sales Chart
         const salesChart = initializeChart('chart-sales', {
@@ -125,9 +106,9 @@ export default function Dashboard() {
             stroke: { width: 2, lineCap: "round", curve: "smooth" },
             series: [{
                 name: "Sales",
-                data: salesTotal,
+                data: dashboardData.salesTotal,
             }],
-            labels: salesDate,
+            labels: dashboardData.salesDate,
         });
 
         // Profits Chart
@@ -142,14 +123,14 @@ export default function Dashboard() {
             plotOptions: { bar: { columnWidth: '50%' } },
             series: [{
                 name: "Profits",
-                data: profitsTotal,
+                data: dashboardData.profitsTotal,
             }],
-            labels: profitsDate,
+            labels: dashboardData.profitsDate,
         });
 
         // Best Selling Chart
-        const seriesData = productsBestSelling.map(product => product.total);
-        const labelsData = productsBestSelling.map(product => product.title);
+        const seriesData = dashboardData.productsBestSelling.map(product => product.total);
+        const labelsData = dashboardData.productsBestSelling.map(product => product.title);
 
         const bestProductsChart = initializeChart('chart-best-products', {
             chart: {
@@ -165,7 +146,7 @@ export default function Dashboard() {
                     legend: { position: 'bottom' }
                 }
             }],
-            colors: generateRandomColors(productsBestSelling.length),
+            colors: generateRandomColors(dashboardData.productsBestSelling.length),
             legend: { position: 'bottom' },
             tooltip: {
                 y: { formatter: (val) => `${val}` }
@@ -173,12 +154,11 @@ export default function Dashboard() {
         });
 
         return () => {
-            salesChart.destroy();
-            profitsChart.destroy();
-            bestProductsChart.destroy();
+            if (salesChart) salesChart.destroy();
+            if (profitsChart) profitsChart.destroy();
+            if (bestProductsChart) bestProductsChart.destroy();
         };
-    }, [salesDate, salesTotal, profitsDate, profitsTotal, productsBestSelling]);
-
+    }, [dashboardData]);
 
     return (
         <LayoutAdmin>
@@ -205,9 +185,9 @@ export default function Dashboard() {
                                     <div className="d-flex align-items-center">
                                         <div className="subheader">Sales Today</div>
                                     </div>
-                                    <div className="h1 mb-2">{countSalestoday}</div>
+                                    <div className="h1 mb-2">{dashboardData.countSalestoday}</div>
                                     <hr className='mb-2 mt-1' />
-                                    <div className="h1 mb-0 me-2">{moneyFormat(sumSalestoday)}</div>
+                                    <div className="h1 mb-0 me-2">{moneyFormat(dashboardData.sumSalestoday)}</div>
                                 </div>
                             </div>
                         </div>
@@ -217,7 +197,7 @@ export default function Dashboard() {
                                     <div className="d-flex align-items-center ">
                                         <div className="subheader">Profits Today</div>
                                     </div>
-                                    <div className="h1 mb-0 me-2 mt-4">{moneyFormat(sumProfitsToday)}</div>
+                                    <div className="h1 mb-0 me-2 mt-4">{moneyFormat(dashboardData.sumProfitsToday)}</div>
                                 </div>
                             </div>
                         </div>
@@ -227,11 +207,11 @@ export default function Dashboard() {
                                     <div className="d-flex align-items-center">
                                         <div className="subheader">SALES</div>
                                         <div className="ms-auto lh-1">
-                                            <span className="text-end active" href="#">Last 7 days</span>
+                                            <span className="text-end active">Last 7 days</span>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-baseline">
-                                        <div className="h1 mb-0 me-2">{moneyFormat(sumSalesWeek)}</div>
+                                        <div className="h1 mb-0 me-2">{moneyFormat(dashboardData.sumSalesWeek)}</div>
                                     </div>
                                 </div>
                                 <div id="chart-sales" className="chart-sm"></div>
@@ -243,11 +223,11 @@ export default function Dashboard() {
                                     <div className="d-flex align-items-center">
                                         <div className="subheader">PROFITS</div>
                                         <div className="ms-auto lh-1">
-                                            <span className="text-end active" href="#">Last 7 days</span>
+                                            <span className="text-end active">Last 7 days</span>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-baseline">
-                                        <div className="h1 mb-3 me-2">{moneyFormat(sumProfitsWeek)}</div>
+                                        <div className="h1 mb-3 me-2">{moneyFormat(dashboardData.sumProfitsWeek)}</div>
                                     </div>
                                     <div id="chart-profits" className="chart-sm"></div>
                                 </div>
@@ -276,7 +256,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="card-body scrollable-card-body">
                                     <div className="row">
-                                        {productsLimitStock.map((product) => (
+                                        {dashboardData.productsLimitStock.map((product) => (
                                             <div className='col-12 mb-2' key={product.id}>
                                                 <div className="card rounded">
                                                     <div className="card-body d-flex align-items-center">

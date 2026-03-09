@@ -5,6 +5,7 @@ import { useCustomerStore } from '../../stores/customer';
 import { useCustomerCartStore } from '../../stores/customerCart';
 import { handleCheckout } from '../../service/midtrans';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../../utils/getImageUrl';
 
 export default function CustomerHome() {
     const navigate = useNavigate();
@@ -77,15 +78,6 @@ export default function CustomerHome() {
         useCustomerCartStore.getState().clearCart();
         toast.success("Logout Berhasil!");
         navigate('/login');
-    };
-
-    // Image URL Helper
-    const getImageUrl = (path) => {
-        if (!path) return "https://placehold.co/400x400?text=No+Image";
-        if (path.startsWith('http')) return path;
-        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
-        if (cleanPath.startsWith('http')) return cleanPath;
-        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
     };
 
     // Currency Formatting

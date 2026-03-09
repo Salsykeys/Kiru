@@ -5,9 +5,8 @@ import Api from "../../service/api";
 import PaginationComponent from "../../components/Pagination";
 import CategoryCreate from "./create";
 import DeleteButton from "../../components/DeleteButton";
-//import edit category
 import CategoryEdit from "./edit";
-
+import { getImageUrl } from "../../utils/getImageUrl";
 
 export default function CategoriesIndex() {
     const [categories, setCategories] = useState([]);
@@ -18,14 +17,7 @@ export default function CategoriesIndex() {
     });
 
     const [keywords, setKeywords] = useState("");
-    // Image URL Helper
-    const getImageUrl = (path) => {
-        if (!path) return "https://placehold.co/400x400?text=No+Image";
-        if (path.startsWith('http')) return path;
-        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
-        if (cleanPath.startsWith('http')) return cleanPath;
-        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
-    };
+
 
     const fetchData = async (pageNumber, keywords = "") => {
         const page = pageNumber ? pageNumber : pagination.currentPage;

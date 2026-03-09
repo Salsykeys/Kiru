@@ -1,4 +1,5 @@
 import { useHorizontalScroll } from '../../../utils/useHorizontalScroll';
+import { getImageUrl } from "../../../utils/getImageUrl";
 
 export default function CategoryList({ categories, fetchProducts, fetchProductByCategoryID, setCurrentCategoryId }) {
 
@@ -36,7 +37,7 @@ export default function CategoryList({ categories, fetchProducts, fetchProductBy
                                         <div className="card card-link card-link-pop rounded">
                                             <div className="card-body d-flex align-items-center justify-content-center p-2">
                                                 <img
-                                                    src={category.image?.startsWith('http') ? category.image : (category.image?.replace(/^uploads[\\/]/, '').startsWith('http') ? category.image.replace(/^uploads[\\/]/, '') : `${import.meta.env.VITE_APP_BASEURL}/uploads/${category.image?.replace(/^uploads[\\/]/, '')}`)}
+                                                    src={getImageUrl(category.image)}
                                                     alt={category.name}
                                                     width={50}
                                                     height={50}

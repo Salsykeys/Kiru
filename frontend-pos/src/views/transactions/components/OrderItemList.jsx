@@ -2,6 +2,7 @@ import moneyFormat from "../../../utils/moneyFormat";
 import Api from "../../../service/api";
 import Cookies from 'js-cookie';
 import toast from "react-hot-toast";
+import { getImageUrl } from "../../../utils/getImageUrl";
 
 export default function OrderItemList({ carts, fetchCarts }) {
 
@@ -41,7 +42,7 @@ export default function OrderItemList({ carts, fetchCarts }) {
                         <div className="card rounded">
                             <div className="card-body d-flex align-items-center">
                                 <img
-                                    src={cart.product.image?.startsWith('http') ? cart.product.image : (cart.product.image?.replace(/^uploads[\\/]/, '').startsWith('http') ? cart.product.image.replace(/^uploads[\\/]/, '') : `${import.meta.env.VITE_APP_BASEURL}/uploads/${cart.product.image?.replace(/^uploads[\\/]/, '')}`)}
+                                    src={getImageUrl(cart.product.image)}
                                     alt={cart.product.title}
                                     width={50}
                                     height={50}

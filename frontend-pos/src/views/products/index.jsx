@@ -17,6 +17,7 @@ import ProductCreate from './create';
 import ProductEdit from './edit';
 
 import DeleteButton from '../../components/DeleteButton';
+import { getImageUrl } from '../../utils/getImageUrl';
 
 export default function ProductsIndex() {
     const [products, setProducts] = useState([]);
@@ -28,15 +29,6 @@ export default function ProductsIndex() {
     });
 
     const [keywords, setKeywords] = useState("");
-
-    // Image URL Helper
-    const getImageUrl = (path) => {
-        if (!path) return "https://placehold.co/400x400?text=No+Image";
-        if (path.startsWith('http')) return path;
-        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
-        if (cleanPath.startsWith('http')) return cleanPath;
-        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
-    };
 
     const fetchData = async (pageNumber, keywords = "") => {
         const page = pageNumber ? pageNumber : pagination.currentPage;

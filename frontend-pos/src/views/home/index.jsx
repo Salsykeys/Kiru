@@ -4,6 +4,7 @@ import Api from '../../service/api';
 import { useStore } from '../../stores/user';
 import { useCustomerStore } from '../../stores/customer';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../../utils/getImageUrl';
 
 export default function Home() {
     const { token } = useStore();
@@ -65,15 +66,7 @@ export default function Home() {
         fetchProducts(selectedCategory, search);
     };
 
-    // Image URL Helper
-    const getImageUrl = (path) => {
-        if (!path) return "https://placehold.co/400x400?text=No+Image";
-        if (path.startsWith('http')) return path;
-        // Clean path from Windows backslashes and duplicated 'uploads' prefix
-        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
-        if (cleanPath.startsWith('http')) return cleanPath;
-        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
-    };
+
 
     // Currency Formatting
     const formatIDR = (number) => {

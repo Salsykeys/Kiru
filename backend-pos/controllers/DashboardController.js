@@ -7,15 +7,68 @@ const getDashboardData = async (req, res) => {
         const today = new Date();
         const week = subDays(today, 6); // Last 7 days including today
 
-        // Fetch all transactions in the last week
-        const transactionsWeek = await prisma.transaction.findMany({
-            where: {
-                created_at: {
-                    gte: new Date(week.setHours(0, 0, 0, 0)),
+        // Get dashboard statistics in parallel
+        const [6
+            transactionsWeek,
+            profitsWeek,
+            countSalesToday,
+            sumSalesToday,
+            sumProfitsToday,
+            productsLimitStock,
+            chartBestProduct
+        ] = await Promise.all([
+            prisma.transaction.findMany({
+                where: {
+                    created_at: {
+                        gte: new Date(week.setHours(0, 0, 0, 0)),
+                    },
                 },
-            },
-        });
-    
+            }),
+            prisma.profit.findMany({
+                where: {
+                    created_at: {
+                        gte: new Date(week.setHours(0, 0, 0, 0)),
+                    },
+                },
+            }),
+            prisma.transaction.count({
+                where: {
+                    created_at: {
+                        gte: new Date(`${today.toISOString().split('T')[0]}T00:00:00.000Z`),
+                        lte: new Date(`${today.toISOString().split('T')[0]}T23:59:59.999Z`),
+                    },
+                },
+            }),
+            prisma.transaction.aggregate({
+                _sum: { grand_total: true },
+                where: {
+                    created_at: {
+                        gte: new Date(`${today.toISOString().split('T')[0]}T00:00:00.000Z`),
+                        lte: new Date(`${today.toISOString().split('T')[0]}T23:59:59.999Z`),
+                    },
+                },
+            }),
+            prisma.profit.aggregate({
+                _sum: { total: true },
+                where: {
+                    created_at: {
+                        gte: new Date(`${today.toISOString().split('T')[0]}T00:00:00.000Z`),
+                        lte: new Date(`${today.toISOString().split('T')[0]}T23:59:59.999Z`),
+                    },
+                },
+            }),
+            prisma.product.findMany({
+                where: { stock: { lte: 10 } },
+                include: { category: true },
+            }),
+            prisma.transactionDetail.groupBy({
+                by: ['product_id'],
+                _sum: { qty: true },
+                orderBy: { _sum: { qty: 'desc' } },
+                take: 5,
+            })
+        ]);
+
         const salesByDate = {};
         const profitsByDate = {};
 
@@ -35,15 +88,6 @@ const getDashboardData = async (req, res) => {
             sumSalesWeek += transaction.grand_total;
         });
 
-        // Fetch all profits in the last week
-        const profitsWeek = await prisma.profit.findMany({
-            where: {
-                created_at: {
-                    gte: new Date(week.setHours(0, 0, 0, 0)),
-                },
-            },
-        });
-
         let sumProfitsWeek = 0;
         profitsWeek.forEach(profit => {
             const dateStr = format(new Date(profit.created_at), 'yyyy-MM-dd');
@@ -61,73 +105,11 @@ const getDashboardData = async (req, res) => {
         const profits_date = sortedDates;
         const profits_total = sortedDates.map(date => parseInt(profitsByDate[date]));
 
-        const countSalesToday = await prisma.transaction.count({
-            where: {
-                created_at: {
-                    gte: new Date(`${today.toISOString().split('T')[0]}T00:00:00.000Z`),
-                    lte: new Date(`${today.toISOString().split('T')[0]}T23:59:59.999Z`),
-                },
-            },
-        });
-
-        const sumSalesToday = await prisma.transaction.aggregate({
-            _sum: {
-                grand_total: true,
-            },
-            where: {
-                created_at: {
-                    gte: new Date(`${today.toISOString().split('T')[0]}T00:00:00.000Z`),
-                    lte: new Date(`${today.toISOString().split('T')[0]}T23:59:59.999Z`),
-                },
-            },
-        });
-
-        const sumProfitsToday = await prisma.profit.aggregate({
-            _sum: {
-                total: true,
-            },
-            where: {
-                created_at: {
-                    gte: new Date(`${today.toISOString().split('T')[0]}T00:00:00.000Z`),
-                    lte: new Date(`${today.toISOString().split('T')[0]}T23:59:59.999Z`),
-                },
-            },
-        });
-
-        const productsLimitStock = await prisma.product.findMany({
-            where: {
-                stock: {
-                    lte: 10,
-                },
-            },
-            include: {
-                category: true,
-            },
-        });
-
-        const chartBestProduct = await prisma.transactionDetail.groupBy({
-            by: ['product_id'],
-            _sum: {
-                qty: true,
-            },
-            orderBy: {
-                _sum: {
-                    qty: 'desc',
-                },
-            },
-            take: 5,
-        });
-
+        // Get product details for best selling products
         const productIds = chartBestProduct.map(item => item.product_id);
-
         const products = await prisma.product.findMany({
-            where: {
-                id: { in: productIds },
-            },
-            select: {
-                id: true,
-                title: true,
-            },
+            where: { id: { in: productIds } },
+            select: { id: true, title: true },
         });
 
         const bestSellingProducts = chartBestProduct.map(item => {
