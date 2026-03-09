@@ -29,27 +29,29 @@ export default function ProductsIndex() {
 
     const [keywords, setKeywords] = useState("");
 
+    // Image URL Helper
+    const getImageUrl = (path) => {
+        if (!path) return "https://placehold.co/400x400?text=No+Image";
+        if (path.startsWith('http')) return path;
+        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
+        if (cleanPath.startsWith('http')) return cleanPath;
+        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
+    };
+
     const fetchData = async (pageNumber, keywords = "") => {
-
         const page = pageNumber ? pageNumber : pagination.currentPage;
-
         const token = Cookies.get('token');
 
         if (token) {
-
             Api.defaults.headers.common['Authorization'] = token;
-
             try {
                 const response = await Api.get(`/api/products?page=${page}&search=${keywords}`);
-
                 setProducts(response.data.data);
-
                 setPagination(() => ({
                     currentPage: response.data.pagination.currentPage,
                     perPage: response.data.pagination.perPage,
                     total: response.data.pagination.total
                 }));
-
             } catch (error) {
                 console.error("There was an error fetching the data!", error);
             }
@@ -57,22 +59,22 @@ export default function ProductsIndex() {
             console.error("Token is not available!");
         }
     }
-    
+
     useEffect(() => {
         fetchData();
     }, []);
 
     const searchHandler = () => {
-            fetchData(1, keywords)
+        fetchData(1, keywords)
+    }
+
+    const handleKeyDown = (e) => {
+        if (e.key == 'Enter') {
+            searchHandler();
         }
+    };
 
-        const handleKeyDown = (e) => {
-            if (e.key == 'Enter') {
-                searchHandler();
-            }
-        };
-
-        return (
+    return (
         <LayoutAdmin>
             <div className="page-header d-print-none">
                 <div className="container-xl">
@@ -93,7 +95,7 @@ export default function ProductsIndex() {
                     <div className="row">
                         <div className='col-12 mb-3'>
                             <div className="input-group">
-                            <ProductCreate fetchData={fetchData} />
+                                <ProductCreate fetchData={fetchData} />
                                 <input type="text" className="form-control" value={keywords} onChange={(e) => setKeywords(e.target.value)} onKeyDown={handleKeyDown} placeholder="search by product name" />
                                 <button onClick={searchHandler} className="btn btn-md btn-primary">SEARCH</button>
                             </div>
@@ -119,18 +121,18 @@ export default function ProductsIndex() {
                                                     ? products.map((product, index) => (
                                                         <tr key={index}>
                                                             <td data-label="Barcode">
-                                                                <Barcode 
-                                                                    value={product.barcode} 
+                                                                <Barcode
+                                                                    value={product.barcode}
                                                                     format={"CODE39"}
-                                                                    lineColor={'#000'} 
-                                                                    width={1} 
+                                                                    lineColor={'#000'}
+                                                                    width={1}
                                                                     height={20}
                                                                     fontSize={10}
                                                                 />
                                                             </td>
                                                             <td data-label="Category Name">
                                                                 <div className="d-flex py-1 align-items-center">
-                                                                    <span className="avatar me-2" style={{ backgroundImage: `url(${import.meta.env.VITE_APP_BASEURL}/${product.image.replace(/\\/g, '/')})` }}></span>
+                                                                    <span className="avatar me-2" style={{ backgroundImage: `url(${getImageUrl(product.image)})` }}></span>
                                                                     <div className="flex-fill">
                                                                         <div className="font-weight-medium">{product.title}</div>
                                                                     </div>
@@ -150,8 +152,8 @@ export default function ProductsIndex() {
                                                             </td>
                                                             <td>
                                                                 <div className="btn-list flex-nowrap">
-                                                                <ProductEdit productId={product.id} fetchData={fetchData} />
-                                                                <DeleteButton id={product.id} endpoint="/api/products" fetchData={fetchData} />
+                                                                    <ProductEdit productId={product.id} fetchData={fetchData} />
+                                                                    <DeleteButton id={product.id} endpoint="/api/products" fetchData={fetchData} />
                                                                 </div>
                                                             </td>
                                                         </tr>

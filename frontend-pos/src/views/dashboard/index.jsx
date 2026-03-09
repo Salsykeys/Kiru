@@ -28,6 +28,15 @@ export default function Dashboard() {
     //stoklimit
     const [productsLimitStock, setproductsLimitStock] = useState([]);
 
+    // Image URL Helper
+    const getImageUrl = (path) => {
+        if (!path) return "https://placehold.co/400x400?text=No+Image";
+        if (path.startsWith('http')) return path;
+        const cleanPath = path.toString().replace(/^uploads[\\/]/, '');
+        if (cleanPath.startsWith('http')) return cleanPath;
+        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
+    };
+
     const fetchData = async () => {
         const token = Cookies.get("token");
 
@@ -272,7 +281,7 @@ export default function Dashboard() {
                                                 <div className="card rounded">
                                                     <div className="card-body d-flex align-items-center">
                                                         <img
-                                                            src={product.image?.startsWith('http') ? product.image : `${import.meta.env.VITE_APP_BASEURL}/uploads/${product.image.replace(/^uploads[\\/]/, '')}`}
+                                                            src={getImageUrl(product.image)}
                                                             alt={product.title}
                                                             width={50}
                                                             height={50}

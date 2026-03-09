@@ -83,7 +83,8 @@ export default function CustomerHome() {
     const getImageUrl = (path) => {
         if (!path) return "https://placehold.co/400x400?text=No+Image";
         if (path.startsWith('http')) return path;
-        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads\//, '');
+        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
+        if (cleanPath.startsWith('http')) return cleanPath;
         return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
     };
 

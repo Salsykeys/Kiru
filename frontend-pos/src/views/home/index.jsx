@@ -70,7 +70,8 @@ export default function Home() {
         if (!path) return "https://placehold.co/400x400?text=No+Image";
         if (path.startsWith('http')) return path;
         // Clean path from Windows backslashes and duplicated 'uploads' prefix
-        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads\//, '');
+        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
+        if (cleanPath.startsWith('http')) return cleanPath;
         return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
     };
 

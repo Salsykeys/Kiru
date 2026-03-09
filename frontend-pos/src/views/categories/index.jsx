@@ -18,6 +18,15 @@ export default function CategoriesIndex() {
     });
 
     const [keywords, setKeywords] = useState("");
+    // Image URL Helper
+    const getImageUrl = (path) => {
+        if (!path) return "https://placehold.co/400x400?text=No+Image";
+        if (path.startsWith('http')) return path;
+        const cleanPath = path.toString().replace(/\\/g, '/').replace(/^uploads[\\/]/, '');
+        if (cleanPath.startsWith('http')) return cleanPath;
+        return `${import.meta.env.VITE_APP_BASEURL}/uploads/${cleanPath}`;
+    };
+
     const fetchData = async (pageNumber, keywords = "") => {
         const page = pageNumber ? pageNumber : pagination.currentPage;
         const token = Cookies.get("token");
@@ -109,7 +118,7 @@ export default function CategoriesIndex() {
                                                                 <span
                                                                     className="avatar me-2"
                                                                     style={{
-                                                                        backgroundImage: `url(${import.meta.env.VITE_APP_BASEURL}/${category.image.replace(/\\/g, '/')})`,
+                                                                        backgroundImage: `url(${getImageUrl(category.image)})`,
                                                                     }}
                                                                 ></span>
                                                                 <div className="flex-fill">
