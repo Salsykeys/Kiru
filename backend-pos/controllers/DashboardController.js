@@ -8,7 +8,7 @@ const getDashboardData = async (req, res) => {
         const week = subDays(today, 6); // Last 7 days including today
 
         // Get dashboard statistics in parallel
-        const [6
+        const [
             transactionsWeek,
             profitsWeek,
             countSalesToday,

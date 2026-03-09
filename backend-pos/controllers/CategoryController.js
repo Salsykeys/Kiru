@@ -256,7 +256,7 @@ const allCategories = async (req, res) => {
             data: categories,
         });
     } catch (error) {
-        return req.status(500).send({
+        return res.status(500).send({
             meta: {
                 success: false,
                 message: 'Internal server Error',
