@@ -51,7 +51,7 @@ export default function ProductList({ products, fetchCarts }) {
                                 </div>
                                 <div className="card-body text-center">
                                     <img
-                                        src={product.image?.startsWith('http') ? product.image : `${import.meta.env.VITE_APP_BASEURL}/${product.image}`}
+                                        src={product.image?.startsWith('http') ? product.image : `${import.meta.env.VITE_APP_BASEURL}/uploads/${product.image.replace(/^uploads[\\/]/, '')}`}
                                         alt={product.title}
                                         className="me-2 rounded"
                                     />
