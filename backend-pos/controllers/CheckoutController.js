@@ -94,6 +94,8 @@ const createSnapTransaction = async (req, res) => {
 
 const handleNotification = async (req, res) => {
     try {
+        console.log("--> WEBHOOK_BODY_RECEIVED:", JSON.stringify(req.body));
+
         let snap = new midtransClient.Snap({
             isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
             serverKey: process.env.MIDTRANS_SERVER_KEY,
@@ -105,18 +107,21 @@ const handleNotification = async (req, res) => {
         let transactionStatus = statusResponse.transaction_status;
         let fraudStatus = statusResponse.fraud_status;
 
+        console.log(`--> MIDTRANS_STATUS: Invoice=${orderId}, Status=${transactionStatus}, Fraud=${fraudStatus}`);
+
         const transaction = await prisma.transaction.findUnique({
             where: { invoice: orderId },
             include: { transaction_details: { include: { product: true } } }
         });
 
         if (!transaction) {
+            console.error("--> ERROR: Transaction not found in DB for invoice:", orderId);
             return res.status(404).json({ message: 'Transaction not found' });
         }
 
         if (transactionStatus == 'capture') {
             if (fraudStatus == 'challenge') {
-                // challenge
+                console.log("--> FRAUD_CHALLENGE: Status remains pending");
             } else if (fraudStatus == 'accept') {
                 await processSettlement(transaction);
             }
@@ -125,11 +130,13 @@ const handleNotification = async (req, res) => {
         } else if (transactionStatus == 'cancel' ||
             transactionStatus == 'deny' ||
             transactionStatus == 'expire') {
+            console.log(`--> PAYMENT_FAILED: ${transactionStatus}. Updating to failed.`);
             await prisma.transaction.update({
                 where: { id: transaction.id },
                 data: { status: 'failed' }
             });
         } else if (transactionStatus == 'pending') {
+            console.log("--> PAYMENT_STILL_PENDING");
             await prisma.transaction.update({
                 where: { id: transaction.id },
                 data: { status: 'pending' }
@@ -137,13 +144,18 @@ const handleNotification = async (req, res) => {
         }
         res.status(200).json({ status: 'success' });
     } catch (error) {
-        console.error('Midtrans Webhook Error:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('--> MIDTRANS_NOTIFICATION_ERROR:', error);
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
 
 async function processSettlement(transaction) {
-    if (transaction.status === 'success') return;
+    if (transaction.status === 'success') {
+        console.log("--> SKIPPED: Transaction already success");
+        return;
+    }
+
+    console.log(`--> PROCESSING_SETTLEMENT for Invoice: ${transaction.invoice}`);
 
     await prisma.transaction.update({
         where: { id: transaction.id },
@@ -154,6 +166,8 @@ async function processSettlement(transaction) {
         const totalBuyPrice = detail.product.buy_price * detail.qty;
         const totalSellPrice = detail.product.sell_price * detail.qty;
         const profit = totalSellPrice - totalBuyPrice;
+
+        console.log(`--> CALCULATING_PROFIT for Product: ${detail.product.title}, Amount: ${profit}`);
 
         await prisma.profit.create({
             data: {
@@ -166,7 +180,9 @@ async function processSettlement(transaction) {
             where: { id: detail.product_id },
             data: { stock: { decrement: detail.qty } },
         });
+        console.log(`--> STOCK_DECREMENTED for Product: ${detail.product.title}, Qty: ${detail.qty}`);
     }
+    console.log("--> SETTLEMENT_COMPLETE");
 }
 
 const getTransactionStatus = async (req, res) => {
@@ -175,6 +191,11 @@ const getTransactionStatus = async (req, res) => {
         if (!invoice) {
             return res.status(400).json({ meta: { success: false, message: 'Invoice diperlukan' } });
         }
+
+        // Mencegah cache status 304 agar polling selalu dapat data terbaru dari DB
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
 
         const transaction = await prisma.transaction.findUnique({
             where: { invoice },
