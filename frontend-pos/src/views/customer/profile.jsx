@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useCustomerStore } from '../../stores/customer';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import PaginationComponent from '../../components/Pagination';
+import Api from '../../service/api';
 
 export default function CustomerProfile() {
     const { customer, customerToken, getCustomerTransactions } = useCustomerStore();
@@ -13,6 +14,8 @@ export default function CustomerProfile() {
         perPage: 5,
         total: 0
     });
+    const pollingIntervalRef = useRef(null);
+    const pollingInvoicesRef = useRef(new Set());
 
     const fetchTransactions = useCallback(async (pageNumber = 1) => {
         setLoading(true);
@@ -25,12 +28,56 @@ export default function CustomerProfile() {
                 perPage: response.pagination.perPage,
                 total: response.pagination.total
             });
+
+            // Check if there are any pending transactions to poll
+            const pendingTransactions = response.data.filter(t => t.status === 'pending');
+            if (pendingTransactions.length > 0) {
+                pendingTransactions.forEach(t => pollingInvoicesRef.current.add(t.invoice));
+                startPolling();
+            }
         } catch (error) {
             console.error("Fetch transactions error:", error);
         } finally {
             setLoading(false);
         }
     }, [getCustomerTransactions]);
+
+    const startPolling = () => {
+        // Clear existing interval to avoid duplicates
+        if (pollingIntervalRef.current) return;
+
+        pollingIntervalRef.current = setInterval(async () => {
+            if (pollingInvoicesRef.current.size === 0) {
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
+                return;
+            }
+            try {
+                const invoicesToCheck = [...pollingInvoicesRef.current];
+                for (const invoice of invoicesToCheck) {
+                    const response = await Api.get(`/api/checkout/status?invoice=${invoice}`);
+                    const { status } = response.data.data;
+                    if (status !== 'pending') {
+                        setTransactions(prev => prev.map(t =>
+                            t.invoice === invoice ? { ...t, status } : t
+                        ));
+                        pollingInvoicesRef.current.delete(invoice);
+                        if (status === 'success') {
+                            const state = useCustomerStore.getState();
+                            const refreshed = await state.getCustomerTransactions();
+                            setTotalSpent(refreshed.total_spent || 0);
+                        }
+                    }
+                }
+                if (pollingInvoicesRef.current.size === 0) {
+                    clearInterval(pollingIntervalRef.current);
+                    pollingIntervalRef.current = null;
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }, 3000);
+    };
 
     useEffect(() => {
         // Force scroll to top when page loaded
@@ -48,6 +95,13 @@ export default function CustomerProfile() {
         }
 
         fetchTransactions(1);
+
+        // Cleanup polling on component unmount
+        return () => {
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+            }
+        };
     }, [customerToken, customer?.id, fetchTransactions]);
 
     // Point calculations (1 point for every 1000 grand total)

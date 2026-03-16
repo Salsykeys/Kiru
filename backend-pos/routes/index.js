@@ -83,7 +83,8 @@ const routes = [
 
   // Checkout (Midtrans)
   { method: 'post', path: '/checkout/snap', middlewares: [verifyToken, validateCheckout, handleValidationErrors], handler: checkoutController.createSnapTransaction },
-  { method: 'post', path: '/checkout/notification', middlewares: [], handler: checkoutController.handleNotification }
+  { method: 'post', path: '/checkout/notification', middlewares: [], handler: checkoutController.handleNotification },
+  { method: 'get', path: '/checkout/status', middlewares: [verifyToken], handler: checkoutController.getTransactionStatus }
 ];
 
 const createRoutes = (routes) => {

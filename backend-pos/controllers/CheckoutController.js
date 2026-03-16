@@ -169,4 +169,30 @@ async function processSettlement(transaction) {
     }
 }
 
-module.exports = { createSnapTransaction, handleNotification };
+const getTransactionStatus = async (req, res) => {
+    try {
+        const { invoice } = req.query;
+        if (!invoice) {
+            return res.status(400).json({ meta: { success: false, message: 'Invoice diperlukan' } });
+        }
+
+        const transaction = await prisma.transaction.findUnique({
+            where: { invoice },
+            select: { id: true, invoice: true, status: true, grand_total: true, created_at: true }
+        });
+
+        if (!transaction) {
+            return res.status(404).json({ meta: { success: false, message: 'Transaksi tidak ditemukan' } });
+        }
+
+        res.status(200).json({
+            meta: { success: true, message: 'Status transaksi berhasil diambil' },
+            data: transaction
+        });
+    } catch (error) {
+        console.error('GetTransactionStatus Error:', error);
+        res.status(500).json({ meta: { success: false, message: 'Internal server error' } });
+    }
+};
+
+module.exports = { createSnapTransaction, handleNotification, getTransactionStatus };
