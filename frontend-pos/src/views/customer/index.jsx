@@ -498,7 +498,7 @@ export default function CustomerHome() {
                                         color: 'white'
                                     }}>
                                     <div className="d-flex align-items-center gap-3">
-                                        <div className="bg-white p-1 rounded-circle shadow-sm" style={{ width: '40px', height: '38px' }}>
+                                        <div className="bg-white p-1 rounded-circle shadow-sm" style={{ width: '40px', height: '43px' }}>
                                             <img src="/images/logo-kirudoang.png" alt="Kiru" className="img-fluid" />
                                         </div>
                                         <div>
