@@ -327,6 +327,7 @@ const allCustomers = async (req, res) => {
             select: {
                 id: true,
                 name: true,
+                points: true,
             },
             orderBy: {
                 id: 'desc',
@@ -335,7 +336,8 @@ const allCustomers = async (req, res) => {
 
         const formattedCustomers = customers.map(customers => ({
             value: customers.id,
-            label: customers.name
+            label: customers.name,
+            points: customers.points,
         }));
 
         res.status(200).send({
@@ -428,6 +430,11 @@ const getCustomerTransactions = async (req, res) => {
         const totalSpent = aggregate._sum.grand_total || 0;
         const totalPages = Math.ceil(totalTransactions / limit);
 
+        const customer = await prisma.customer.findUnique({
+            where: { id: uId },
+            select: { points: true }
+        });
+
         console.log(`--> SUCCESS: Found ${transactions.length} transactions for user ${uId}`);
         res.status(200).send({
             meta: {
@@ -436,6 +443,7 @@ const getCustomerTransactions = async (req, res) => {
             },
             data: transactions,
             total_spent: totalSpent,
+            customer_points: customer ? customer.points : 0,
             pagination: {
                 currentPage: page,
                 totalPages: totalPages,

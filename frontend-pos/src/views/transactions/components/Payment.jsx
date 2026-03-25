@@ -9,33 +9,36 @@ export default function Payment({ totalCarts, fetchCarts }) {
 
     //set state
     const [cash, setCash] = useState('')
-    const [change, setChange] = useState(0)
     const [discount, setDiscount] = useState('')
-
-    const grandTotal = totalCarts - (parseInt(discount) || 0);
+    const [usePoints, setUsePoints] = useState(false)
 
     //state customers
     const [customers, setCustomers] = useState([])
-    const [selectedCustomer, setSelectedCustomer] = useState('')
+    const [selectedCustomer, setSelectedCustomer] = useState(null)
+
+    // calculate points to use
+    const availablePoints = selectedCustomer?.points || 0;
+    // max points that can be used is either the total points available or the grandTotal without points, whichever is smaller.
+    // wait, discount is a separate field. Let's make point deduction a separate thing from discount.
+    const grandTotalBeforePoints = totalCarts - (parseInt(discount) || 0);
+    const pointsUsed = usePoints ? Math.min(availablePoints, grandTotalBeforePoints) : 0;
+    const grandTotal = grandTotalBeforePoints - pointsUsed;
+
+    // derived state for change
+    const change = cash !== '' ? parseInt(cash) - grandTotal : 0;
 
     //function setDiscount
     function calculateDiscount(e) {
         //set discount
         setDiscount(e.target.value)
 
-        //set change
+        //set cash
         setCash(0)
-
-        //set change
-        setChange(0)
     }
 
     function calculateChange(e) {
         //set cash
         setCash(e.target.value)
-
-        //set change
-        setChange(e.target.value - grandTotal)
     }
 
 
@@ -70,11 +73,12 @@ export default function Payment({ totalCarts, fetchCarts }) {
             Api.defaults.headers.common['Authorization'] = token;
 
             await Api.post('/api/transactions', {
-                customer_id: selectedCustomer.value || null,
+                customer_id: selectedCustomer?.value || null,
                 discount: parseInt(discount) || 0,
                 cash: parseInt(cash),
                 change: parseInt(change),
-                grand_total: parseInt(grandTotal)
+                grand_total: parseInt(grandTotal),
+                points_used: pointsUsed
             })
                 .then(response => {
 
@@ -89,10 +93,33 @@ export default function Payment({ totalCarts, fetchCarts }) {
                         },
                     });
 
+                    let earnedMsg = '';
+                    if (response.data.data.points_earned) {
+                        earnedMsg = `\nMendapatkan ${response.data.data.points_earned} K-Points!`;
+                        toast.success(`${earnedMsg}`, {
+                            duration: 4000,
+                            position: "top-right",
+                            style: {
+                                borderRadius: '10px',
+                                background: '#198754',
+                                color: '#fff',
+                            },
+                        });
+                    }
+
+                    // Reset internal states after success
+                    setCash('');
+                    setDiscount('');
+                    setUsePoints(false);
+                    setSelectedCustomer(null);
+
                     //fetchCarts
                     fetchCarts();
 
                     window.open(`/transactions/print?invoice=${response.data.data.invoice}`, '_blank');
+                })
+                .catch(err => {
+                    toast.error(err.response?.data?.meta?.message || 'Transaction failed');
                 });
         }
     }
@@ -123,6 +150,11 @@ export default function Payment({ totalCarts, fetchCarts }) {
                                             <h4 className="fw-bold">GRAND TOTAL</h4>
                                         </div>
                                         <div className="col-md-8 col-8 text-end">
+                                            {pointsUsed > 0 && (
+                                                <h5 className="text-muted mb-1 text-decoration-line-through">
+                                                    {moneyFormat(grandTotalBeforePoints)}
+                                                </h5>
+                                            )}
                                             <h2 className="fw-bold">{moneyFormat(grandTotal)}</h2>
                                             <div>
                                                 <hr />
@@ -138,8 +170,33 @@ export default function Payment({ totalCarts, fetchCarts }) {
                                     <Select
                                         options={customers}
                                         value={selectedCustomer}
-                                        onChange={(e) => setSelectedCustomer(e)}
+                                        onChange={(e) => {
+                                            setSelectedCustomer(e);
+                                            setUsePoints(false); // reset points usage when changing customer
+                                        }}
+                                        isClearable
+                                        formatOptionLabel={(option) => (
+                                            <div className="d-flex justify-content-between">
+                                                <span>{option.label}</span>
+                                                <span className="badge bg-green-lt">{option.points || 0} pts</span>
+                                            </div>
+                                        )}
                                     />
+                                    {selectedCustomer && availablePoints > 0 && (
+                                        <div className="mt-2 form-check">
+                                            <input 
+                                                className="form-check-input" 
+                                                type="checkbox" 
+                                                id="usePointsCheck" 
+                                                checked={usePoints}
+                                                onChange={(e) => setUsePoints(e.target.checked)}
+                                            />
+                                            <label className="form-check-label" htmlFor="usePointsCheck">
+                                                Gunakan K-Points ({availablePoints} available) <br />
+                                                <small className="text-muted">Potongan: {moneyFormat(pointsUsed)}</small>
+                                            </label>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="col-md-6">
                                     <label className='mb-1'>Discount (Rp.)</label>

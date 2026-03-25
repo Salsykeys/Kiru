@@ -77,6 +77,8 @@ model Transaction {
   grand_total         Float
   status              String              @default("success")
   snap_token          String?
+  points_earned       Float               @default(0)
+  points_used         Float               @default(0)
   created_at          DateTime            @default(now())
   cashier             User?               @relation(fields: [cashier_id], references: [id], onDelete: Cascade)
   customer            Customer?           @relation(fields: [customer_id], references: [id], onDelete: Cascade)
@@ -107,6 +109,7 @@ model Customer {
   password     String
   no_telp      String
   address      String
+  points       Float         @default(0)
   created_at   DateTime      @default(now())
   updated_at   DateTime      @updatedAt
   transactions Transaction[]

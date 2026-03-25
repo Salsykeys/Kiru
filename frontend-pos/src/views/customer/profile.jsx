@@ -7,7 +7,7 @@ import Api from '../../service/api';
 export default function CustomerProfile() {
     const { customer, customerToken, getCustomerTransactions } = useCustomerStore();
     const [transactions, setTransactions] = useState([]);
-    const [totalSpent, setTotalSpent] = useState(0);
+    const [customerPoints, setCustomerPoints] = useState(0);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({
         currentPage: 1,
@@ -22,7 +22,7 @@ export default function CustomerProfile() {
         try {
             const response = await getCustomerTransactions(pageNumber);
             setTransactions(response.data);
-            setTotalSpent(response.total_spent || 0);
+            setCustomerPoints(response.customer_points || 0);
             setPagination({
                 currentPage: response.pagination.currentPage,
                 perPage: response.pagination.perPage,
@@ -65,7 +65,7 @@ export default function CustomerProfile() {
                         if (status === 'success') {
                             const state = useCustomerStore.getState();
                             const refreshed = await state.getCustomerTransactions();
-                            setTotalSpent(refreshed.total_spent || 0);
+                            setCustomerPoints(refreshed.customer_points || 0);
                         }
                     }
                 }
@@ -104,9 +104,9 @@ export default function CustomerProfile() {
         };
     }, [customerToken, customer?.id, fetchTransactions]);
 
-    // Point calculations (1 point for every 1000 grand total)
+    // Point calculations
     const calculatePoints = () => {
-        return Math.floor(totalSpent / 1000);
+        return customerPoints;
     };
 
     // Currency Formatting (Indonesian Rupiah)

@@ -22,6 +22,9 @@ const createTransaction = async (req, res) => {
             });
         }
 
+        const pointsEarned = customerid ? Math.floor(grandTotal * 0.01) : 0;
+        const pointsUsed = parseInt(req.body.points_used) || 0;
+
         const transaction = await prisma.transaction.create({
             data: {
                 cashier_id: cashierId,
@@ -31,8 +34,22 @@ const createTransaction = async (req, res) => {
                 change: change,
                 discount: discount,
                 grand_total: grandTotal,
+                points_earned: pointsEarned,
+                points_used: pointsUsed,
             },
         });
+
+        // Award points to customer if customer_id is provided
+        if (customerid) {
+            await prisma.customer.update({
+                where: { id: customerid },
+                data: {
+                    points: {
+                        increment: pointsEarned - pointsUsed
+                    }
+                }
+            });
+        }
 
         const carts = await prisma.cart.findMany({
             where: { cashier_id: cashierId },
@@ -78,7 +95,10 @@ const createTransaction = async (req, res) => {
                 success: true,
                 message: 'Transaksi berhasil dibuat',
             },
-            data: transaction,
+            data: {
+                ...transaction,
+                points_earned, // Return points earned for UI
+            },
         });
     } catch (error) {
         res.status(500).send({

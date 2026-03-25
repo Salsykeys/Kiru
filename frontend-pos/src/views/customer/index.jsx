@@ -19,6 +19,8 @@ export default function CustomerHome() {
     const [search, setSearch] = useState("");
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [isCheckout, setIsCheckout] = useState(false);
+    const [usePoints, setUsePoints] = useState(false);
+    const [customerPoints, setCustomerPoints] = useState(0);
 
     // Fetch Categories
     const fetchCategories = async () => {
@@ -49,6 +51,18 @@ export default function CustomerHome() {
         }
     };
 
+    const fetchCustomerPoints = async () => {
+        try {
+            const token = useCustomerStore.getState().customerToken;
+            const response = await Api.get('/api/customers/transactions?limit=1', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setCustomerPoints(response.data.customer_points || 0);
+        } catch (error) {
+            console.error("Error fetching points:", error);
+        }
+    };
+
     useEffect(() => {
         if (!customerToken) {
             navigate('/login');
@@ -56,6 +70,7 @@ export default function CustomerHome() {
         }
         fetchCategories();
         fetchProducts();
+        fetchCustomerPoints();
     }, [customerToken, navigate]);
 
     const handleCategoryClick = (catId) => {
@@ -96,11 +111,16 @@ export default function CustomerHome() {
 
     const cartTotal = cartItems.reduce((acc, item) => acc + item.total, 0);
 
+    // K-Points Calculation
+    const maxPointsAllowed = Math.floor(cartTotal / 2); // default max reduction is 50%
+    const pointsToUse = usePoints ? Math.min(customerPoints, maxPointsAllowed) : 0;
+    const finalCartTotal = cartTotal - pointsToUse;
+
     const onCheckout = async () => {
         if (cartItems.length === 0) return;
         setIsCheckout(true);
         try {
-            const { status } = await handleCheckout(cartItems, customer, cartTotal);
+            const { status } = await handleCheckout(cartItems, customer, cartTotal, pointsToUse);
             if (status === 'success' || status === 'pending') {
                 if (status === 'success') {
                     toast.success('Pembayaran berhasil! Terima kasih sudah belanja di Kiru! 🎉');
@@ -115,7 +135,10 @@ export default function CustomerHome() {
                 document.body.classList.remove('modal-open');
                 document.body.classList.remove('offcanvas-open');
 
-                navigate('/customer/profile');
+                // Add small delay to allow Midtrans Snap scripts to finish background requests
+                setTimeout(() => {
+                    navigate('/customer/profile');
+                }, 1000);
             }
         } catch (error) {
             if (error.message !== 'popup_closed') {
@@ -468,9 +491,33 @@ export default function CustomerHome() {
                     </div>
                     {cartItems.length > 0 && (
                         <div className="p-3 bg-white border-top shadow-sm position-sticky bottom-0">
-                            <div className="d-flex justify-content-between mb-3 align-items-center">
+                            {customerPoints > 0 && (
+                                <div className="mb-3 p-2 bg-primary bg-opacity-10 rounded border border-primary border-opacity-25 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div className="fw-bold text-primary small d-flex align-items-center gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 8m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z" /><path d="M12 8l0 4" /><path d="M12 12l-4 0" /><path d="M12 12l4 0" /><path d="M12 7l0 1" /><path d="M7 16.5c.667 .333 1.333 .5 2 .5c2 0 3 -1 3 -3c0 -3 -1 -3 -3 -3c-2 0 -3 1 -3 3c0 2 1 3 3 3z" /><path d="M17 16.5c.667 .333 1.333 .5 2 .5c2 0 3 -1 3 -3c0 -3 -1 -3 -3 -3c-2 0 -3 1 -3 3c0 2 1 3 3 3z" /></svg>
+                                            K-Points ({customerPoints})
+                                        </div>
+                                        <div className="text-muted" style={{ fontSize: '0.7rem' }}>Bisa dipakai max 50% transaksi</div>
+                                    </div>
+                                    <div className="form-check form-switch m-0 pb-1">
+                                        <input className="form-check-input" type="checkbox" role="switch" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} style={{ cursor: 'pointer' }} />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="d-flex justify-content-between mb-2">
+                                <span className="text-muted small">Subtotal</span>
+                                <span className="fw-semibold text-dark small">{formatIDR(cartTotal)}</span>
+                            </div>
+                            {usePoints && pointsToUse > 0 && (
+                                <div className="d-flex justify-content-between mb-2 text-success">
+                                    <span className="small">Diskon K-Points</span>
+                                    <span className="fw-semibold small">- {formatIDR(pointsToUse)}</span>
+                                </div>
+                            )}
+                            <div className="d-flex justify-content-between mb-3 align-items-center border-top pt-2">
                                 <span className="text-muted fw-semibold">Total Belanja</span>
-                                <span className="h2 fw-bolder mb-0 text-primary">{formatIDR(cartTotal)}</span>
+                                <span className="h2 fw-bolder mb-0 text-primary">{formatIDR(finalCartTotal)}</span>
                             </div>
                             <button onClick={onCheckout} disabled={isCheckout} className="btn btn-primary w-100 rounded-pill py-2 shadow-sm fs-4 fw-bold">
                                 {isCheckout ? 'Memproses...' : 'Checkout Sekarang'}

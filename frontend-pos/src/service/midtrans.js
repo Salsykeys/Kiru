@@ -1,12 +1,13 @@
 import Api from './api';
 
-export const handleCheckout = async (cartItems, customer, cartTotal) => {
+export const handleCheckout = async (cartItems, customer, cartTotal, pointsUsed = 0) => {
     const payload = {
         amount: cartTotal,
         customerName: customer.name,
         customerEmail: customer.email,
         customerPhone: customer.no_telp,
-        cartItems: cartItems
+        cartItems: cartItems,
+        points_used: pointsUsed
     };
 
     // Dapatkan snap token dari backend - ini juga sudah menyimpan transaksi 'pending' ke DB
