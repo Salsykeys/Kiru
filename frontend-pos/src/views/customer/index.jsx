@@ -492,14 +492,14 @@ export default function CustomerHome() {
                     {cartItems.length > 0 && (
                         <div className="p-3 bg-white border-top shadow-sm position-sticky bottom-0">
                             {customerPoints > 0 && (
-                                <div className="mb-3 p-3 rounded-4 d-flex justify-content-between align-items-center shadow-sm border-0" 
-                                     style={{ 
-                                         background: 'linear-gradient(135deg, #206bc4 0%, #4299e1 100%)',
-                                         color: 'white'
-                                     }}>
+                                <div className="mb-3 p-3 rounded-4 d-flex justify-content-between align-items-center shadow-sm border-0"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #206bc4 0%, #4299e1 100%)',
+                                        color: 'white'
+                                    }}>
                                     <div className="d-flex align-items-center gap-3">
-                                        <div className="bg-white bg-opacity-20 p-2 rounded-3">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 8m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z" /><path d="M12 8l0 4" /><path d="M12 12l-4 0" /><path d="M12 12l4 0" /><path d="M12 7l0 1" /><path d="M7 16.5c.667 .333 1.333 .5 2 .5c2 0 3 -1 3 -3c0 -3 -1 -3 -3 -3c-2 0 -3 1 -3 3c0 2 1 3 3 3z" /><path d="M17 16.5c.667 .333 1.333 .5 2 .5c2 0 3 -1 3 -3c0 -3 -1 -3 -3 -3c-2 0 -3 1 -3 3c0 2 1 3 3 3z" /></svg>
+                                        <div className="bg-white p-1 rounded-circle shadow-sm" style={{ width: '40px', height: '40px' }}>
+                                            <img src="/images/logo-kirudoang.png" alt="Kiru" className="img-fluid" />
                                         </div>
                                         <div>
                                             <div className="fw-bold fs-3 mb-0">K-Points ({customerPoints.toLocaleString()})</div>
@@ -507,13 +507,13 @@ export default function CustomerHome() {
                                         </div>
                                     </div>
                                     <div className="form-check form-switch m-0 pb-1">
-                                        <input 
-                                            className="form-check-input shadow-none bg-white border-white border-opacity-50" 
-                                            type="checkbox" 
-                                            role="switch" 
-                                            checked={usePoints} 
-                                            onChange={(e) => setUsePoints(e.target.checked)} 
-                                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }} 
+                                        <input
+                                            className="form-check-input shadow-none bg-white border-white border-opacity-50"
+                                            type="checkbox"
+                                            role="switch"
+                                            checked={usePoints}
+                                            onChange={(e) => setUsePoints(e.target.checked)}
+                                            style={{ cursor: 'pointer', transform: 'scale(1.2)' }}
                                         />
                                     </div>
                                 </div>
