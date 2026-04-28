@@ -6,7 +6,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const router = require('./routes');
 
-//init appo
+//init app
 const app = express()
 app.use(cors());
 
@@ -30,5 +30,4 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-// Export the Express API untuk Vercel Serverless
 module.exports = app;

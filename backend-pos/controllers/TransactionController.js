@@ -17,7 +17,7 @@ const createTransaction = async (req, res) => {
             return res.status(400).send({
                 meta: {
                     success: false,
-                    message: 'Data input tidak valid. Silahkan periksa perimintaan anda',
+                    message: 'Data input tidak valid. Silahkan periksa permintaan anda',
                 },
             });
         }
@@ -97,10 +97,11 @@ const createTransaction = async (req, res) => {
             },
             data: {
                 ...transaction,
-                points_earned, // Return points earned for UI
+                points_earned: pointsEarned, // Return points earned for UI
             },
         });
     } catch (error) {
+        console.error('CREATE_TRANSACTION_ERROR:', error.name, '-', error.message, '\nStack:', error.stack);
         res.status(500).send({
             meta: {
                 success: false,
