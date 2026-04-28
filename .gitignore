@@ -1,6 +1,14 @@
+node_modules/
+.env
+dist/
+.DS_Store
+
+# Unnecessary files (School/Task docs)
+PROPOSAL_KIRU.md
+Tugas_Praktik.md
 contoh_poster_kiru.png
 pkk.md
-PROPOSAL_KIRU.md
 sp.md
-Tugas_Praktik.md
+template HTML/
+githubposkiru/
 vercel.json
